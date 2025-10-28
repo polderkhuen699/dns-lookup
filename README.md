@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/kataras/dns-lookup?style=for-the-badge)](https://github.com/kataras/dns-lookup)
 [![Release](https://img.shields.io/github/v/release/kataras/dns-lookup?style=for-the-badge)](https://github.com/kataras/dns-lookup/releases)
-[![Build Status](https://github.com/kataras/dns-lookup/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/kataras/dns-lookup/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/kataras/dns-lookup/ci.yml?branch=main&style=for-the-badge)](https://github.com/kataras/dns-lookup/actions/workflows/ci.yml)
 
 A fully-featured DNS Lookup and Domain WHOIS package written in Go.
 
