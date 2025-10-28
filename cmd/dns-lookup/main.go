@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version = "1.0.0"
+	version = "1.0.1"
 	banner  = `
 ╔═══════════════════════════════════════╗
 ║   DNS Lookup & WHOIS Tool v%s    ║
@@ -150,7 +150,17 @@ func handleSRVLookup(ctx context.Context, client *lookup.Client, opts *options) 
 
 	result, err := client.DNSLookupSRV(ctx, service, proto, name)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error performing SRV lookup: %v\n", err)
+		errorMsg := err.Error()
+		// Check if it's a "no such host" error and format it consistently
+		if strings.Contains(strings.ToLower(errorMsg), "no such host") {
+			errorMsg = fmt.Sprintf("domain not found: %s", name)
+		}
+
+		if opts.jsonOutput {
+			printJSON(map[string]string{"error": errorMsg})
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", errorMsg)
+		}
 		os.Exit(1)
 	}
 
@@ -166,7 +176,17 @@ func handleDNSLookup(ctx context.Context, client *lookup.Client, opts *options) 
 
 	result, err := client.DNSLookup(ctx, opts.domain, recordType)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error performing DNS lookup: %v\n", err)
+		errorMsg := err.Error()
+		// Check if it's a "no such host" error and format it consistently
+		if strings.Contains(strings.ToLower(errorMsg), "no such host") {
+			errorMsg = fmt.Sprintf("domain not found: %s", opts.domain)
+		}
+
+		if opts.jsonOutput {
+			printJSON(map[string]string{"error": errorMsg})
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", errorMsg)
+		}
 		os.Exit(1)
 	}
 
@@ -180,7 +200,22 @@ func handleDNSLookup(ctx context.Context, client *lookup.Client, opts *options) 
 func handleWhoisLookup(ctx context.Context, client *lookup.Client, opts *options) {
 	result, err := client.WHOISLookup(ctx, opts.domain)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error performing WHOIS lookup: %v\n", err)
+		if opts.jsonOutput {
+			printJSON(map[string]string{"error": err.Error()})
+		} else {
+			fmt.Fprintf(os.Stderr, "Error performing WHOIS lookup: %v\n", err)
+		}
+		os.Exit(1)
+	}
+
+	// Check if domain was not found in WHOIS
+	if strings.Contains(strings.ToLower(result.RawResponse), "no match for") {
+		errorMsg := fmt.Sprintf("domain not found: %s", opts.domain)
+		if opts.jsonOutput {
+			printJSON(map[string]string{"error": errorMsg})
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", errorMsg)
+		}
 		os.Exit(1)
 	}
 

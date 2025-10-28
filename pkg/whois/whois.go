@@ -9,13 +9,14 @@ import (
 	"time"
 )
 
-// WhoisServer represents a WHOIS server configuration
+// WhoisServer represents a WHOIS server configuration with host and port.
 type WhoisServer struct {
 	Host string
 	Port string
 }
 
-// DefaultWhoisServers maps TLDs to their WHOIS servers
+// DefaultWhoisServers maps TLDs to their corresponding WHOIS servers,
+// supporting 50+ top-level domains including gTLDs and ccTLDs.
 var DefaultWhoisServers = map[string]WhoisServer{
 	"com":     {Host: "whois.verisign-grs.com", Port: "43"},
 	"net":     {Host: "whois.verisign-grs.com", Port: "43"},
@@ -63,7 +64,8 @@ var DefaultWhoisServers = map[string]WhoisServer{
 	"default": {Host: "whois.iana.org", Port: "43"},
 }
 
-// WhoisResult contains the result of a WHOIS query
+// WhoisResult contains the result of a WHOIS query, including both raw response
+// and parsed structured data such as registrar, dates, name servers, and status.
 type WhoisResult struct {
 	Domain      string                 `json:"domain"`
 	RawResponse string                 `json:"raw_response"`
@@ -80,24 +82,26 @@ type WhoisResult struct {
 	Emails      []string               `json:"emails,omitempty"`
 }
 
-// Client is a WHOIS lookup client
+// Client is a WHOIS lookup client that performs WHOIS queries with support
+// for automatic referral following and configurable timeouts.
 type Client struct {
 	timeout        time.Duration
 	followReferral bool
 	servers        map[string]WhoisServer
 }
 
-// Config contains configuration options for the WHOIS client
+// Config contains configuration options for the WHOIS client.
 type Config struct {
-	// Timeout for WHOIS queries (default: 10 seconds)
+	// Timeout for WHOIS queries (default: 10 seconds).
 	Timeout time.Duration
-	// FollowReferral automatically follows referral WHOIS servers
+	// FollowReferral automatically follows referral WHOIS servers.
 	FollowReferral bool
-	// CustomServers allows overriding default WHOIS servers
+	// CustomServers allows overriding default WHOIS servers.
 	CustomServers map[string]WhoisServer
 }
 
-// DefaultConfig returns a default configuration
+// DefaultConfig returns a default configuration with a 10-second timeout,
+// automatic referral following enabled, and empty custom servers map.
 func DefaultConfig() *Config {
 	return &Config{
 		Timeout:        10 * time.Second,
@@ -106,7 +110,8 @@ func DefaultConfig() *Config {
 	}
 }
 
-// NewClient creates a new WHOIS lookup client with the given configuration
+// NewClient creates a new WHOIS lookup client with the given configuration.
+// If config is nil, DefaultConfig is used. Custom servers are merged with defaults.
 func NewClient(config *Config) (*Client, error) {
 	if config == nil {
 		config = DefaultConfig()
@@ -132,7 +137,9 @@ func NewClient(config *Config) (*Client, error) {
 	}, nil
 }
 
-// Lookup performs a WHOIS lookup for the specified domain
+// Lookup performs a WHOIS lookup for the specified domain, automatically
+// determining the appropriate WHOIS server and following referrals if enabled.
+// If ctx is nil, a new context with the client's timeout is created.
 func (c *Client) Lookup(ctx context.Context, domain string) (*WhoisResult, error) {
 	if ctx == nil {
 		var cancel context.CancelFunc
@@ -187,7 +194,8 @@ func (c *Client) Lookup(ctx context.Context, domain string) (*WhoisResult, error
 	return result, nil
 }
 
-// query performs the actual WHOIS query
+// query performs the actual WHOIS query by connecting to the WHOIS server
+// via TCP and sending the domain query.
 func (c *Client) query(ctx context.Context, domain string, server WhoisServer) (string, error) {
 	address := net.JoinHostPort(server.Host, server.Port)
 
@@ -231,6 +239,7 @@ func (c *Client) query(ctx context.Context, domain string, server WhoisServer) (
 }
 
 // getWhoisServer determines the appropriate WHOIS server for a domain
+// by extracting the TLD and looking it up in the server map.
 func (c *Client) getWhoisServer(domain string) (WhoisServer, error) {
 	parts := strings.Split(domain, ".")
 	if len(parts) < 2 {
@@ -255,7 +264,8 @@ func (c *Client) getWhoisServer(domain string) (WhoisServer, error) {
 	return c.servers["default"], nil
 }
 
-// extractReferralServer extracts referral WHOIS server from response
+// extractReferralServer extracts referral WHOIS server information from the response,
+// looking for "Whois Server:", "Referral URL:", or "Refer:" fields.
 func (c *Client) extractReferralServer(response string) string {
 	lines := strings.Split(response, "\n")
 	for _, line := range lines {
@@ -282,6 +292,7 @@ func (c *Client) extractReferralServer(response string) string {
 }
 
 // parseResponse parses the WHOIS response and extracts structured data
+// including registrar, dates, name servers, status, and email addresses.
 func (c *Client) parseResponse(result *WhoisResult) {
 	lines := strings.Split(result.RawResponse, "\n")
 
@@ -388,7 +399,8 @@ func (c *Client) parseResponse(result *WhoisResult) {
 	result.ParsedData["emails"] = result.Emails
 }
 
-// isValidEmail performs basic email validation
+// isValidEmail performs basic email validation by checking length,
+// the presence of @ and . characters, and basic structure.
 func isValidEmail(email string) bool {
 	if len(email) < 3 || len(email) > 254 {
 		return false

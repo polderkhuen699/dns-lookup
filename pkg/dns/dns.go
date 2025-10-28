@@ -7,22 +7,32 @@ import (
 	"time"
 )
 
-// RecordType represents a DNS record type
+// RecordType represents a DNS record type used in DNS queries.
 type RecordType string
 
 const (
-	RecordTypeA     RecordType = "A"
-	RecordTypeAAAA  RecordType = "AAAA"
+	// RecordTypeA represents IPv4 address records.
+	RecordTypeA RecordType = "A"
+	// RecordTypeAAAA represents IPv6 address records.
+	RecordTypeAAAA RecordType = "AAAA"
+	// RecordTypeCNAME represents canonical name records.
 	RecordTypeCNAME RecordType = "CNAME"
-	RecordTypeMX    RecordType = "MX"
-	RecordTypeNS    RecordType = "NS"
-	RecordTypeTXT   RecordType = "TXT"
-	RecordTypeSOA   RecordType = "SOA"
-	RecordTypePTR   RecordType = "PTR"
-	RecordTypeSRV   RecordType = "SRV"
+	// RecordTypeMX represents mail exchange records.
+	RecordTypeMX RecordType = "MX"
+	// RecordTypeNS represents name server records.
+	RecordTypeNS RecordType = "NS"
+	// RecordTypeTXT represents text records.
+	RecordTypeTXT RecordType = "TXT"
+	// RecordTypeSOA represents start of authority records.
+	RecordTypeSOA RecordType = "SOA"
+	// RecordTypePTR represents pointer records for reverse DNS lookups.
+	RecordTypePTR RecordType = "PTR"
+	// RecordTypeSRV represents service records.
+	RecordTypeSRV RecordType = "SRV"
 )
 
-// LookupResult contains the results of a DNS lookup
+// LookupResult contains the results of a DNS lookup, including the queried domain,
+// record type, resolved records, and metadata about the query.
 type LookupResult struct {
 	Domain      string                 `json:"domain"`
 	RecordType  RecordType             `json:"record_type"`
@@ -36,28 +46,31 @@ type LookupResult struct {
 	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// Client is a DNS lookup client
+// Client is a DNS lookup client that performs DNS queries with configurable
+// timeout and custom resolver support.
 type Client struct {
 	resolver *net.Resolver
 	timeout  time.Duration
 }
 
-// Config contains configuration options for the DNS client
+// Config contains configuration options for the DNS client.
 type Config struct {
-	// Timeout for DNS queries (default: 5 seconds)
+	// Timeout for DNS queries (default: 5 seconds).
 	Timeout time.Duration
-	// CustomResolver allows specifying a custom DNS server (e.g., "8.8.8.8:53")
+	// CustomResolver allows specifying a custom DNS server (e.g., "8.8.8.8:53").
 	CustomResolver string
 }
 
-// DefaultConfig returns a default configuration
+// DefaultConfig returns a default configuration with a 5-second timeout
+// and the system's default DNS resolver.
 func DefaultConfig() *Config {
 	return &Config{
 		Timeout: 5 * time.Second,
 	}
 }
 
-// NewClient creates a new DNS lookup client with the given configuration
+// NewClient creates a new DNS lookup client with the given configuration.
+// If config is nil, DefaultConfig is used. Returns an error if client creation fails.
 func NewClient(config *Config) (*Client, error) {
 	if config == nil {
 		config = DefaultConfig()
@@ -88,7 +101,9 @@ func NewClient(config *Config) (*Client, error) {
 	return client, nil
 }
 
-// Lookup performs a DNS lookup for the specified domain and record type
+// Lookup performs a DNS lookup for the specified domain and record type.
+// If ctx is nil, a new context with the client's timeout is created.
+// Returns a LookupResult containing the query results or an error if the lookup fails.
 func (c *Client) Lookup(ctx context.Context, domain string, recordType RecordType) (*LookupResult, error) {
 	if ctx == nil {
 		var cancel context.CancelFunc
@@ -142,7 +157,9 @@ func (c *Client) Lookup(ctx context.Context, domain string, recordType RecordTyp
 	return result, nil
 }
 
-// LookupAll performs lookups for all common record types
+// LookupAll performs lookups for all common record types (A, AAAA, CNAME, MX, NS, TXT).
+// If ctx is nil, a new context with extended timeout is created.
+// Returns a map of record types to their results, continuing even if individual lookups fail.
 func (c *Client) LookupAll(ctx context.Context, domain string) (map[RecordType]*LookupResult, error) {
 	if ctx == nil {
 		var cancel context.CancelFunc
@@ -172,7 +189,9 @@ func (c *Client) LookupAll(ctx context.Context, domain string) (map[RecordType]*
 	return results, nil
 }
 
-// LookupSRV performs a SRV record lookup
+// LookupSRV performs a SRV record lookup for the specified service, protocol, and name.
+// For example, service="_http", proto="_tcp", name="example.com".
+// If ctx is nil, a new context with the client's timeout is created.
 func (c *Client) LookupSRV(ctx context.Context, service, proto, name string) (*LookupResult, error) {
 	if ctx == nil {
 		var cancel context.CancelFunc
@@ -201,7 +220,7 @@ func (c *Client) LookupSRV(ctx context.Context, service, proto, name string) (*L
 	return result, nil
 }
 
-// lookupA performs an A record lookup
+// lookupA performs an A record lookup and returns IPv4 addresses.
 func (c *Client) lookupA(ctx context.Context, domain string) ([]string, error) {
 	ips, err := c.resolver.LookupIP(ctx, "ip4", domain)
 	if err != nil {
@@ -215,7 +234,7 @@ func (c *Client) lookupA(ctx context.Context, domain string) ([]string, error) {
 	return records, nil
 }
 
-// lookupAAAA performs an AAAA record lookup
+// lookupAAAA performs an AAAA record lookup and returns IPv6 addresses.
 func (c *Client) lookupAAAA(ctx context.Context, domain string) ([]string, error) {
 	ips, err := c.resolver.LookupIP(ctx, "ip6", domain)
 	if err != nil {
@@ -229,7 +248,7 @@ func (c *Client) lookupAAAA(ctx context.Context, domain string) ([]string, error
 	return records, nil
 }
 
-// lookupCNAME performs a CNAME record lookup
+// lookupCNAME performs a CNAME record lookup and returns the canonical name.
 func (c *Client) lookupCNAME(ctx context.Context, domain string) ([]string, error) {
 	cname, err := c.resolver.LookupCNAME(ctx, domain)
 	if err != nil {
@@ -238,12 +257,12 @@ func (c *Client) lookupCNAME(ctx context.Context, domain string) ([]string, erro
 	return []string{cname}, nil
 }
 
-// lookupMX performs an MX record lookup
+// lookupMX performs an MX record lookup and returns mail exchange records.
 func (c *Client) lookupMX(ctx context.Context, domain string) ([]*net.MX, error) {
 	return c.resolver.LookupMX(ctx, domain)
 }
 
-// lookupNS performs an NS record lookup
+// lookupNS performs an NS record lookup and returns name server records.
 func (c *Client) lookupNS(ctx context.Context, domain string) ([]string, error) {
 	nss, err := c.resolver.LookupNS(ctx, domain)
 	if err != nil {
@@ -257,12 +276,12 @@ func (c *Client) lookupNS(ctx context.Context, domain string) ([]string, error) 
 	return records, nil
 }
 
-// lookupTXT performs a TXT record lookup
+// lookupTXT performs a TXT record lookup and returns text records.
 func (c *Client) lookupTXT(ctx context.Context, domain string) ([]string, error) {
 	return c.resolver.LookupTXT(ctx, domain)
 }
 
-// lookupPTR performs a PTR (reverse DNS) lookup
+// lookupPTR performs a PTR (reverse DNS) lookup for an IP address.
 func (c *Client) lookupPTR(ctx context.Context, ip string) ([]string, error) {
 	return c.resolver.LookupAddr(ctx, ip)
 }
